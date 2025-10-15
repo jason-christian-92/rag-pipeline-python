@@ -58,3 +58,4 @@ Retrieve all documents that are related to the given query, sorted by relevancy
 - [ ] More file types to be convert
 - [ ] Refactor into classes
 - [ ] More command line options (e.g. model choice, more actions)
+- [ ] Completing the pipeline with LLM (Now it's only up to retrieval of context)
