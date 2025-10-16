@@ -16,13 +16,13 @@ Assuming you have cloned the project
 
 1. Copy `.env.example` and rename it to `.env`
 2. Create a table in your Supabase account with columns
-  * document name (VARCHAR). This will store the document path. Set as primary key
-  * page (INT). This will store the page number. Set as primary key
-  * embedding (VECTOR). This will store the embedded data.
-    * You might need to add the `pgvector` to your schema to enable vector data type
+  - document name (VARCHAR). This will store the document path. Set as primary key
+  - page (INT). This will store the page number. Set as primary key
+  - embedding (VECTOR). This will store the embedded data.
+    - You might need to add the `pgvector` to your schema to enable vector data type
 3. In order to be able to query by vector data, it's best to create a postgre function that can be called through the API
-  * In your table view inside Supabase, select `SQL Editor`
-  * Run this SQL
+  - In your table view inside Supabase, select `SQL Editor`
+  - Run this SQL
 ```lang=sql
 DROP FUNCTION query_documents(vector);
 
@@ -38,12 +38,12 @@ as $$
     order by similarity desc
 $$;
 ```
-  * the column names have to match the columns in your table
-  * You can now call `query_documents(vectordata)` through the supabase API
+  - the column names have to match the columns in your table
+  - You can now call `query_documents(vectordata)` through the supabase API
 4. Replace the variables in .env with your own credentials
 5. Create a folder and fill it with PDF documents you want to convert to vector data
 6. Inside `prompts` folder, remove the `.example`-prefix so the script can load relevant prompts
-  * you can also customize your own prompts
+  - you can also customize your own prompts
 7. Install prerequisite libraries (`pip install -r requirements.txt`)
 
 ## How to use
