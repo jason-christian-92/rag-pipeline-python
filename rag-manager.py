@@ -1,6 +1,5 @@
 import argparse
 import os
-import json
 from dotenv import load_dotenv
 
 from classes.supabase_conn import SupabaseConnection
