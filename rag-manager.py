@@ -4,7 +4,6 @@ import json
 from dotenv import load_dotenv
 
 from classes.supabase_conn import SupabaseConnection
-from classes.file_io import FileIO
 from classes.rag_pipeline import RAGPipeline
 
 # Load from .env variable
@@ -15,12 +14,15 @@ parser = argparse.ArgumentParser("rag-manager")
 parser.add_argument("--action", help="chosen action")
 parser.add_argument("--foldername", help="the foldername containing the files to be embedded")
 parser.add_argument("--query", help="user query for AI search")
+parser.add_argument("--verbose", help="shows more information", action=argparse.BooleanOptionalAction)
+parser.set_defaults(verbose=False)
 args = parser.parse_args()
 
 # grab the args
 action = args.action
 foldername = args.foldername
 query = args.query
+verbose = args.verbose
 
 # Database to store the embeddings
 sbConn = SupabaseConnection(os.getenv("SUPABASE_API_URL"), os.getenv("SUPABASE_API_KEY"))
@@ -55,7 +57,7 @@ elif action == "ask":
 		print ("--query cannot be empty")
 	else:
 		print ("AI is looking for answer...")
-		answer = rag_pipeline.query_answer(query)
+		answer = rag_pipeline.query_answer(query, verbose)
 		print ("=======")
 		print (answer)
 else:

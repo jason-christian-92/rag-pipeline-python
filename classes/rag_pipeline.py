@@ -11,6 +11,7 @@ class RAGPipeline:
 	embeddingsExtModel = None
 	supabaseDbConn = None
 	llmModel = None
+	fileIO = FileIO()
 
 	# Initialize the LLM model, vector DB connection, and embeddings model
 	def __init__(self, extractionModel, llmModel, supabaseConnection):
@@ -36,19 +37,29 @@ class RAGPipeline:
 		return response.data
 
 	# Return answer from AI with the given query string
-	def query_answer(self, queryString):
+	def query_answer(self, queryString, verbose=False):
 		response = self.query_documents(queryString)
 		if (len(response) == 0):
 			# No relevant documents found. Tell the LLM to show generic "don't know"
-			promptTemplate = ChatPromptTemplate.from_template(FileIO.text_from_file("prompts/prompt_noidea.txt"))
+			promptTemplate = ChatPromptTemplate.from_template(self.fileIO.text_from_file("prompts/prompt_noidea.txt"))
 			prompt = promptTemplate.format(question = queryString)
 		else:
 			# Grab 2 of the most relevant documents
 			# TODO find out how to limit the source (num of docs, similarity, etc. etc.)
 			relevantDocs = response[:2]
-			relevantDocsContent = [FileIO.read_pdf(x['doc_name'], x['page']-1) for x in relevantDocs]
+
+			if verbose:
+				print("Docs most relevant to the query:")
+				for rd in relevantDocs:
+					print("-", 
+						rd["doc_name"],
+						" at page " + str(rd["page"]),
+						" with similarity score " + str(rd["similarity"])
+					)
+
+			relevantDocsContent = [self.fileIO.read_pdf(x['doc_name'], x['page']-1) for x in relevantDocs]
 			# generate prompt
-			promptTemplate = ChatPromptTemplate.from_template(FileIO.text_from_file("prompts/prompt_template.txt"))
+			promptTemplate = ChatPromptTemplate.from_template(self.fileIO.text_from_file("prompts/prompt_template.txt"))
 			prompt = promptTemplate.format(context = "\n\n".join(relevantDocsContent), question = queryString)
 
 		# ask the LLM
@@ -62,15 +73,21 @@ class RAGPipeline:
 	# Convert the content of the file into array of embeddings
 	def embeddings_from_file(self, fPath):
 		fSpec = mimetypes.guess_type(fPath)
+		chunks = []
 		if (fSpec[0] == "application/pdf"):
-			chunks = FileIO.read_whole_pdf(fPath)
+			chunks = self.fileIO.read_whole_pdf(fPath)
 			embeddings = [self.encode_text_to_embedding(x) for x in chunks]
 			# Will return embedding per page from PDF
 			return embeddings
+		elif fSpec[0] == "text/plain":
+			chunks = [self.fileIO.text_from_file(fPath)]
+		else:
+			print(f"Unsupported type: {fSpec[0]}")
 
 		# TODO other file ext
 		
-		return None
+		embeddings = [self.encode_text_to_embedding(x) for x in chunks]
+		return embeddings
 
 	# Store the embeddings in the database
 	def store_embeddings(self, tableName, docName, embeddings):

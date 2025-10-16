@@ -33,7 +33,7 @@ as $$
     select 
     d.doc_name AS doc_name,
     d.page AS page,
-    (d.embedding <=> query_embedding) AS similarity
+    1- (d.embedding <=> query_embedding) AS similarity
     from doc_embeddings d
     order by similarity desc
 $$;
