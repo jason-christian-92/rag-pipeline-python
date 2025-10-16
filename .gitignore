@@ -1,5 +1,11 @@
 # ENV file
 .env
 
+# Pycache
+**/__pycache__/
+
+# user-made prompts
+prompts/*.txt
+
 # data source
 docs/*
