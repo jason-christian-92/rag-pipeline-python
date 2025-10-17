@@ -12,6 +12,7 @@ load_dotenv()
 parser = argparse.ArgumentParser("rag-manager")
 parser.add_argument("--action", help="chosen action")
 parser.add_argument("--foldername", help="the foldername containing the files to be embedded")
+parser.add_argument("--url", help="URL for the pipeline to crawl")
 parser.add_argument("--query", help="user query for AI search")
 parser.add_argument("--verbose", help="shows more information", action=argparse.BooleanOptionalAction)
 parser.set_defaults(verbose=False)
@@ -21,6 +22,7 @@ args = parser.parse_args()
 action = args.action
 foldername = args.foldername
 query = args.query
+url = args.url
 verbose = args.verbose
 
 # Database to store the embeddings
@@ -57,8 +59,15 @@ elif action == "ask":
 	else:
 		print ("AI is looking for answer...")
 		answer = rag_pipeline.query_answer(query, verbose)
-		print ("=======")
+		print ("======= AI answer =======")
 		print (answer)
+elif action == "crawl":
+	if url is None or url == "":
+		print("--url must be a valid url")
+	else:
+		print("collecting textual information from the URL...")
+		rag_pipeline.crawl_and_store_info(url, verbose)
+		print(f"Embeddings stored under {url}")
 else:
 	# Unknown action
 	print("Unknown action " + action)

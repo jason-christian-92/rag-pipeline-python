@@ -59,9 +59,16 @@ py rag-manager.py --action query --query <query-string>
 Retrieve all documents that are related to the given query, sorted by relevancy
 
 ```lang=bash
+py rag-manager.py --action crawl --url <url>
+```
+crawl the text content of the given URL and store its embeddings to the database.
+- When prompting, you might want to tell the AI to only check the textual content of the website without going to other URLs
+
+```lang=bash
 py rag-manager.py --action ask --query <query-string>
 ```
 Ask the LLM and get the answer.
+
 
 ## TODO
 
@@ -70,5 +77,4 @@ Ask the LLM and get the answer.
 - [ ] More file types to be converted
 - [ ] More command line options (e.g. model choice, more actions)
 - [ ] Refining search (similarity value, limiting the number of docs, better prompt)
-- [ ] Testing other models
 - [ ] Local postgresql database instead of online service

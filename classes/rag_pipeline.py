@@ -5,6 +5,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_ollama import OllamaLLM
 
 from .file_io import FileIO
+from .web_crawler import WebCrawler
 
 class RAGPipeline:
 	
@@ -12,12 +13,15 @@ class RAGPipeline:
 	supabaseDbConn = None
 	llmModel = None
 	fileIO = FileIO()
+	webCrawler = WebCrawler()
+	__tableName = None
 
 	# Initialize the LLM model, vector DB connection, and embeddings model
 	def __init__(self, extractionModel, llmModel, supabaseConnection):
 		self.embeddingsExtModel = SentenceTransformer(extractionModel);
 		self.supabaseDbConn = supabaseConnection
 		self.llmModel = OllamaLLM(model=llmModel)
+		self.__tableName = os.getenv("SUPABASE_TABLE_NAME")
 
 	# Convert the content of a file into embeddings
 	def store_files_as_embeddings(self, dirPath, verbose=False):
@@ -26,7 +30,7 @@ class RAGPipeline:
 			print ("Extracting embedding from "+fPath+"...") if verbose else None
 			content = self.embeddings_from_file(fPath) 
 			print ("storing embeddings...") if verbose else None
-			self.store_embeddings(os.getenv("SUPABASE_TABLE_NAME"), fPath, content)
+			self.store_embeddings(self.__tableName, fPath, content)
 
 	# Query documents relevant to the given query string
 	def query_documents(self, queryString):
@@ -65,6 +69,12 @@ class RAGPipeline:
 		# ask the LLM
 		answer = self.llmModel.invoke(prompt)
 		return answer
+
+	def crawl_and_store_info(self, url, verbose=False):
+		textChunks = self.webCrawler.get_text(url)
+		wholeText = ("\n\n").join(textChunks)
+		embedding = [self.encode_text_to_embedding(wholeText)]
+		self.store_embeddings(self.__tableName, url, embedding)
 
 	# Convert the given string into embeddings
 	def encode_text_to_embedding(self, text):
