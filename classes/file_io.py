@@ -1,7 +1,6 @@
 import pymupdf
 
 class FileIO:
-
 	def read_whole_pdf(self, path):
 		doc = pymupdf.open(path)
 		allChunks = []

@@ -29,6 +29,11 @@ class RAGPipeline:
 			fPath = os.path.join(dirPath, file)
 			print ("Extracting embedding from "+fPath+"...") if verbose else None
 			content = self.embeddings_from_file(fPath) 
+			
+			if len(content) == 0:
+				print("No content to be converted as embeddings")
+				return
+
 			print ("storing embeddings...") if verbose else None
 			self.store_embeddings(self.__tableName, fPath, content)
 
@@ -72,9 +77,12 @@ class RAGPipeline:
 
 	def crawl_and_store_info(self, url, verbose=False):
 		textChunks = self.webCrawler.get_text(url)
-		wholeText = ("\n\n").join(textChunks)
-		embedding = [self.encode_text_to_embedding(wholeText)]
-		self.store_embeddings(self.__tableName, url, embedding)
+		if len(textChunks) == 0:
+			print("the content of the URL doesn't have any important information to convert into embeddings.")
+		else:
+			wholeText = ("\n\n").join(textChunks)
+			embedding = [self.encode_text_to_embedding(wholeText)]
+			self.store_embeddings(self.__tableName, url, embedding)
 
 	# Convert the given string into embeddings
 	def encode_text_to_embedding(self, text):
@@ -84,15 +92,19 @@ class RAGPipeline:
 	def embeddings_from_file(self, fPath):
 		fSpec = mimetypes.guess_type(fPath)
 		chunks = []
-		if (fSpec[0] == "application/pdf"):
-			chunks = self.fileIO.read_whole_pdf(fPath)
-			embeddings = [self.encode_text_to_embedding(x) for x in chunks]
-			# Will return embedding per page from PDF
-			return embeddings
-		elif fSpec[0] == "text/plain":
-			chunks = [self.fileIO.text_from_file(fPath)]
-		else:
-			print(f"Unsupported type: {fSpec[0]}")
+
+		match fSpec[0]:
+			case "application/pdf" | \
+				"application/vnd.openxmlformats-officedocument.wordprocessingml.document" | \
+				"application/msword":
+				chunks = self.fileIO.read_whole_pdf(fPath)
+
+			case "text/plain":
+				chunks = [self.fileIO.text_from_file(fPath)]
+
+			case _:
+				print(f"Unsupported type: {fSpec[0]}")
+				return None
 
 		# TODO other file ext
 		

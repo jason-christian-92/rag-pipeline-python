@@ -13,6 +13,6 @@ class SupabaseConnection:
 
 	def insert(self, tblName, param):
 		try:
-			self.connObject.table(tblName).insert(param).execute()
+			self.connObject.table(tblName).upsert(param).execute()
 		except Exception as e:
 			print("Failed to store:", e)

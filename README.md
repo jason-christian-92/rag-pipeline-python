@@ -1,6 +1,6 @@
 Demonstrating simple RAG Pipeline using Python.
 
-* Parses all PDF and text documents inside a given folder folder and save it as embeddings
+* Parses all PDF, DOC, DOCX and text documents inside a given folder folder and save it as embeddings
 * Find relevant documents based on the given query
 * Store textual web content as embeddings
 * Use local LLM to ask the AI about something based on the queried relevant documents
